@@ -1,0 +1,208 @@
+{% extends "layout.html" %}
+{% block title %}{{ type }} Lead{% endblock %}
+{% block content %}
+{% from "_formhelpers.html" import render_field %}
+<div class="container-fluid">
+    <div class="h3">{{ type }} Lead</div>
+    <form method="POST" id="leadForm">
+        {{ form.hidden_tag() }}
+        <div class="row">
+            <div class="col-md-12">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Original Form</th>
+                            <th class="text-center">Actions</th>
+                            <th>Suggestions from OpenAI</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{ render_field(form.customer_name) }}</td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-secondary copy-btn" data-target="customer_name">COPY</button>
+                                <button type="button" class="btn btn-secondary add-btn" data-target="customer_name">ADD</button>
+                            </td>
+                            <td>
+                                <input type="text" id="suggested_customer_name" class="form-control" readonly>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>{{ render_field(form.enterprise_name) }}</td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-secondary copy-btn" data-target="enterprise_name">COPY</button>
+                                <button type="button" class="btn btn-secondary add-btn" data-target="enterprise_name">ADD</button>
+                            </td>
+                            <td>
+                                <input type="text" id="suggested_enterprise_name" class="form-control" readonly>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>{{ render_field(form.lead_type) }}</td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-secondary copy-btn" data-target="lead_type">COPY</button>
+                                <button type="button" class="btn btn-secondary add-btn" data-target="lead_type">ADD</button>
+                            </td>
+                            <td>
+                                <input type="text" id="suggested_lead_type" class="form-control" readonly>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>{{ render_field(form.domain) }}</td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-secondary copy-btn" data-target="domain">COPY</button>
+                                <button type="button" class="btn btn-secondary add-btn" data-target="domain">ADD</button>
+                            </td>
+                            <td>
+                                <input type="text" id="suggested_domain" class="form-control" readonly>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>{{ render_field(form.todo_actions) }}</td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-secondary copy-btn" data-target="todo_actions">COPY</button>
+                                <button type="button" class="btn btn-secondary add-btn" data-target="todo_actions">ADD</button>
+                            </td>
+                            <td>
+                                <input type="text" id="suggested_todo_actions" class="form-control" readonly>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>{{ render_field(form.next_follow_up) }}</td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-secondary copy-btn" data-target="next_follow_up">COPY</button>
+                                <button type="button" class="btn btn-secondary add-btn" data-target="next_follow_up">ADD</button>
+                            </td>
+                            <td>
+                                <input type="text" id="suggested_next_follow_up" class="form-control" readonly>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>{{ render_field(form.action_needed) }}</td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-secondary copy-btn" data-target="action_needed">COPY</button>
+                                <button type="button" class="btn btn-secondary add-btn" data-target="action_needed">ADD</button>
+                            </td>
+                            <td>
+                                <input type="checkbox" id="suggested_action_needed" class="form-check-input" readonly>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </div>
+    </form>
+    <button id="start-recording" class="btn btn-secondary">Start Voice Input</button>
+    <button id="stop-recording" class="btn btn-secondary">Stop Voice Input</button>
+</div>
+
+<script>
+    let recognition;
+    let intervalId;
+    let transcriptAccumulator = '';
+
+    document.getElementById('start-recording').addEventListener('click', function() {
+        startVoiceRecognition();
+        intervalId = setInterval(sendTranscript, 60000);
+    });
+
+    document.getElementById('stop-recording').addEventListener('click', function() {
+        stopVoiceRecognition();
+        clearInterval(intervalId);
+        sendTranscript(); // Send final transcript
+    });
+
+    function startVoiceRecognition() {
+        recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'en-US';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+        recognition.continuous = true;
+
+        recognition.onresult = function(event) {
+            const transcript = event.results[event.resultIndex][0].transcript;
+            transcriptAccumulator += transcript + ' ';
+            console.log("Transcript: ", transcript);
+        };
+
+        recognition.onerror = function(event) {
+            alert('Error occurred in recognition: ' + event.error);
+        };
+
+        recognition.onend = function() {
+            console.log('Speech recognition service disconnected');
+        };
+
+        recognition.start();
+        console.log('Speech recognition started');
+    }
+
+    function stopVoiceRecognition() {
+        if (recognition) {
+            recognition.stop();
+            console.log('Speech recognition stopped');
+        }
+    }
+
+    function sendTranscript() {
+        if (transcriptAccumulator.trim() === '') {
+            return;
+        }
+
+        fetch('/leads/parse_voice_input', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ transcript: transcriptAccumulator })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Server response:', data);  // Log the server response
+            if (data.status === 'success' && data.lead_info) {
+                fillSuggestions(data.lead_info);
+            } else if (data.status !== 'success') {
+                alert('Error processing voice input: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);  // Log fetch errors
+            alert('Error processing voice input: ' + error.message);
+        });
+
+        transcriptAccumulator = ''; // Reset the accumulator
+    }
+
+    function fillSuggestions(leadInfo) {
+        document.getElementById('suggested_customer_name').value = leadInfo.customer_name || '';
+        document.getElementById('suggested_enterprise_name').value = leadInfo.enterprise_name || '';
+        document.getElementById('suggested_lead_type').value = leadInfo.lead_type || '';
+        document.getElementById('suggested_domain').value = leadInfo.domain || '';
+        document.getElementById('suggested_todo_actions').value = leadInfo.todo_actions || '';
+        document.getElementById('suggested_next_follow_up').value = leadInfo.next_follow_up || '';
+        document.getElementById('suggested_action_needed').checked = leadInfo.action_needed || false;
+    }
+
+    document.querySelectorAll('.copy-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const target = document.getElementById(button.dataset.target);
+            const suggested = document.getElementById(`suggested_${button.dataset.target}`);
+            target.value = suggested.value;
+        });
+    });
+
+    document.querySelectorAll('.add-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const target = document.getElementById(button.dataset.target);
+            const suggested = document.getElementById(`suggested_${button.dataset.target}`);
+            target.value += ` ${suggested.value}`;
+        });
+    });
+</script>
+{% endblock %}

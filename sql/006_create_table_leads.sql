@@ -1,0 +1,12 @@
+CREATE TABLE SMART_Leads (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_name VARCHAR(255) NOT NULL,
+    enterprise_name VARCHAR(255) NOT NULL,
+    lead_type VARCHAR(255) NOT NULL,
+    domain VARCHAR(255) NOT NULL,
+    todo_actions TEXT NOT NULL,
+    next_follow_up DATE NOT NULL,
+    action_needed BOOLEAN NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
