@@ -1,0 +1,74 @@
+{% macro render_table(data, title=None, ignored=[], view=None, edit=None, delete=None, associate=None,remove=None , table_class="",current_user="",page=None) %}
+<div class="container-fluid mb-5" style="padding: 5px;">
+    {% if title %}
+    <div class="h1" style="text-align: center; padding: 1px; color: aliceblue; background: black; border-top-left-radius: 25px; border-top-right-radius: 25px;">{{ title }} 
+        {% if "Watch" in title and data and data|length > 1 %}
+            <a href="{{url_for(remove)}}" class="btn btn-danger btn-sm">Remove All from Watch List</a>
+        {% else %}
+        {% endif %}
+    </div>
+    {% endif %}
+    <table class="table {{ table_class }}">
+        <thead>
+            {% if data and data|length > 1 %}
+            <!-- dj325 20/11/23  -->
+            <tr class="text-capitalize">
+                {% for r in data[0] %}
+                {% if r not in ignored %}
+                <th>{{ r.replace("_"," ") }}</th>
+                {% endif %}
+                {% endfor %}
+                {% if view or edit or delete or associate %}
+                <th>Actions</th>
+                {% endif %}
+            </tr>
+            {% endif %}
+        </thead>
+        <tbody>
+            {% for r in data %}
+            <tr>
+                <!-- dj325 20/11/23  -->
+                {% for k, v in r.items() %}
+                {% if k not in ignored %}
+                    {% if k == "image_url" %}
+                    <td><img src={{v}} alt="movies" width="100" 
+                        height="100"></td>
+                    {% endif %}
+                    
+                    {% if k != "image_url" %}
+                    <td>{{ v }}</td>
+                    {% endif %}
+
+                {% endif %}
+                {% endfor %}
+                {% if view or edit or delete or associate  %}
+                <td>
+                    {% if view and r["id"] and page == "watch" %}
+                    <a href="{{ url_for(view) }}?id={{ r['id'] }}&page=watch" class="btn btn-outline-secondary btn-sm">View</a>
+                    {% elif view and r["id"] and page =="list" %}
+                    <a href="{{ url_for(view) }}?id={{ r['id'] }}&page=list" class="btn btn-outline-secondary btn-sm">View</a>
+                    {% elif view and r["id"] and page =="notassociated" %}
+                    <a href="{{ url_for(view) }}?id={{ r['id'] }}&page=notassociated" class="btn btn-outline-secondary btn-sm">View</a>
+                    {% endif %}
+                    {% if edit and r["id"] and current_user.has_role("Admin") %}
+                    <a href="{{ url_for(edit) }}?id={{ r['id'] }}" class="btn btn-secondary btn-sm">Edit</a>
+                    {% endif %}
+                    {% if delete and r["id"] and current_user.has_role("Admin")%}
+                    <a href="{{ url_for(delete) }}?id={{ r['id'] }}" class="btn btn-danger btn-sm">Delete</a>
+                    {% endif %}
+                    {% if associate and r["id"] %}
+                    <a href="{{ url_for(associate) }}?id={{ r['id'] }}&page=watch" class="btn btn-danger btn-sm">Remove from Watch Later</a>
+                    {% endif %}
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+            {% if not data %}
+            <tr class="text-center table-warning">
+                <td colspan="100%" style="color: red;"><marquee behavior="alternate" direction="right">No results</marquee></td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endmacro %}
