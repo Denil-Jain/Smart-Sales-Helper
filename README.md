@@ -49,7 +49,7 @@ Smart Sales Helper is a web application designed to streamline and enhance the s
 - **Flask-Login**: For handling user session management and authentication.
 - **Flask-WTF**: For form handling and validation.
 - **Flask-Principal**: For role-based access control.
-- **SQLAlchemy**: An SQL toolkit and Object-Relational Mapping (ORM) library for database management.
+- **MySQL**: Database.
 - **SpeechRecognition**: A library to convert speech to text for capturing voice input.
 
 ### Relevant Problem Statement
