@@ -9,6 +9,8 @@ import openai
 import json
 import os
 import time
+from flask import jsonify
+from collections import Counter
 
 openai.api_key = os.getenv('OPENAI_API_KEY')
 client = openai.OpenAI()
@@ -195,3 +197,24 @@ def parse_lead_info(lead_info_raw):
             continue
     
     return lead_info
+
+#TODO Analytics for landing page
+
+@leads.route('/analytics', methods=['GET'])
+def analytics():
+    lead_types = Counter()
+    lead_statuses = Counter()
+
+    try:
+        result = DB.selectAll("SELECT lead_type, action_needed FROM SMART_Leads")
+        if result.status and result.rows:
+            for row in result.rows:
+                lead_types[row['lead_type']] += 1
+                lead_statuses['Action Needed' if row['action_needed'] else 'No Action Needed'] += 1
+
+        return jsonify({
+            'lead_types': lead_types,
+            'lead_statuses': lead_statuses
+        })
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500

@@ -2,28 +2,38 @@
 {% block title %}List Leads{% endblock %}
 {% block content %}
 <div class="container-fluid">
-    <div class="h1">List Leads</div>
+    <div class="h3 text-center bg-info mt-1">List Leads</div>
     <table class="table">
         {% if rows and rows|length > 0 %}
         <thead>
             <tr class="text-capitalize">
-                {% for r in rows[0] %}
+                {% for r in rows[0] if r != 'id' %}
                 <th>{{ r }}</th>
                 {% endfor %}
                 <th>Actions</th>
             </tr>
         </thead>
-        {% for r in rows %}
-        <tr>
-            {% for v in r.values() %}
-            <td>{{ v }}</td>
+        <tbody>
+            {% for r in rows %}
+            <tr>
+                {% for k, v in r.items() %}
+                {% if k != 'id' %}
+                <td>
+                    {% if k == 'action_needed' %}
+                    {{ 'Yes' if v else 'No' }}
+                    {% else %}
+                    {{ v }}
+                    {% endif %}
+                </td>
+                {% endif %}
+                {% endfor %}
+                <td>
+                    <a href="{{ url_for('leads.edit', id=r.get('id')) }}" class="btn btn-secondary btn-sm">Edit</a>
+                    <a href="{{ url_for('leads.delete', id=r.get('id'), **request.args) }}" class="btn btn-danger btn-sm">Delete</a>
+                </td>
+            </tr>
             {% endfor %}
-            <td>
-                <a href="{{ url_for('leads.edit', id=r.get('id')) }}" class="btn btn-secondary btn-sm">Edit</a>
-                <a href="{{ url_for('leads.delete', id=r.get('id'), **request.args) }}" class="btn btn-danger btn-sm">Delete</a>
-            </td>
-        </tr>
-        {% endfor %}
+        </tbody>
         {% else %}
         <p>No results to show</p>
         {% endif %}

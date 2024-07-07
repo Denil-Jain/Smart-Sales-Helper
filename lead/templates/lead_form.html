@@ -3,17 +3,17 @@
 {% block content %}
 {% from "_formhelpers.html" import render_field %}
 <div class="container-fluid">
-    <div class="h3">{{ type }} Lead</div>
+    <div class="h3 text-center bg-info mt-1">{{ type }} Lead</div>
     <form method="POST" id="leadForm">
         {{ form.hidden_tag() }}
         <div class="row">
             <div class="col-md-12">
-                <table class="table">
+                <table class="table table-bordered bg-light">
                     <thead>
                         <tr>
-                            <th>Original Form</th>
+                            <th>Form</th>
                             <th class="text-center">Actions</th>
-                            <th>Suggestions from OpenAI</th>
+                            <th>Suggestions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -24,6 +24,7 @@
                                 <button type="button" class="btn btn-secondary add-btn" data-target="customer_name">ADD</button>
                             </td>
                             <td>
+                                <label class="form-label">Customer Name</label>
                                 <input type="text" id="suggested_customer_name" class="form-control" readonly>
                             </td>
                         </tr>
@@ -34,6 +35,7 @@
                                 <button type="button" class="btn btn-secondary add-btn" data-target="enterprise_name">ADD</button>
                             </td>
                             <td>
+                                <label class="form-label">Enterprise Name</label>
                                 <input type="text" id="suggested_enterprise_name" class="form-control" readonly>
                             </td>
                         </tr>
@@ -44,6 +46,7 @@
                                 <button type="button" class="btn btn-secondary add-btn" data-target="lead_type">ADD</button>
                             </td>
                             <td>
+                                <label class="form-label">Lead Type</label>
                                 <input type="text" id="suggested_lead_type" class="form-control" readonly>
                             </td>
                         </tr>
@@ -54,6 +57,7 @@
                                 <button type="button" class="btn btn-secondary add-btn" data-target="domain">ADD</button>
                             </td>
                             <td>
+                                <label class="form-label">Domain</label>
                                 <input type="text" id="suggested_domain" class="form-control" readonly>
                             </td>
                         </tr>
@@ -64,7 +68,8 @@
                                 <button type="button" class="btn btn-secondary add-btn" data-target="todo_actions">ADD</button>
                             </td>
                             <td>
-                                <input type="text" id="suggested_todo_actions" class="form-control" readonly>
+                                <label class="form-label">To-Do Actions</label>
+                                <textarea class="form-control" id="suggested_todo_actions" readonly></textarea>
                             </td>
                         </tr>
                         <tr>
@@ -74,6 +79,7 @@
                                 <button type="button" class="btn btn-secondary add-btn" data-target="next_follow_up">ADD</button>
                             </td>
                             <td>
+                                <label class="form-label">Next Follow-Up</label>
                                 <input type="text" id="suggested_next_follow_up" class="form-control" readonly>
                             </td>
                         </tr>
@@ -84,17 +90,20 @@
                                 <button type="button" class="btn btn-secondary add-btn" data-target="action_needed">ADD</button>
                             </td>
                             <td>
-                                <input type="checkbox" id="suggested_action_needed" class="form-check-input" readonly>
+                                <label class="form-label">Action Needed</label>
+                                <input type="checkbox" id="suggested_action_needed" class="form-check-input" disabled>
                             </td>
                         </tr>
                     </tbody>
                 </table>
-                {{ form.submit(class="btn btn-primary") }}
+                <div>
+                    {{ form.submit(class="btn btn-primary") }}
+                    <button id="start-recording" class="btn btn-secondary">Start Voice Input</button>
+                    <button id="stop-recording" class="btn btn-secondary">Stop Voice Input</button>
+                </div>
             </div>
         </div>
     </form>
-    <button id="start-recording" class="btn btn-secondary">Start Voice Input</button>
-    <button id="stop-recording" class="btn btn-secondary">Stop Voice Input</button>
 </div>
 
 <script>

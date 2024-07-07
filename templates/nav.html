@@ -1,7 +1,11 @@
 {% from "_dropdown_nav.html" import dropdown_nav %}
-<nav class="navbar navbar-expand-lg bg-light">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
+        {% if current_user.is_authenticated %}
+        <a class="navbar-brand" href="{{url_for('auth.landing_page')}}">Smart Sales</a>
+        {% else %}
         <a class="navbar-brand" href="#">Smart Sales</a>
+        {% endif %}
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
             data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
             aria-expanded="false" aria-label="Toggle navigation">
@@ -17,9 +21,14 @@
                     <a class="nav-link" href="{{url_for('auth.register')}}">Register</a>
                 </li>
                 {% else %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{{url_for('auth.landing_page')}}">Home</a>
-                </li>
+                <!-- leads nav (requires admin or sales) -->
+                {% if current_user.has_role("Admin") or current_user.has_role("Sales") %}
+                {% set leads = [
+                    ("leads.add", "Add"),
+                    ("leads.list", "List"),
+                ] %}
+                {{dropdown_nav("Leads", leads)}}
+                {% endif %}
                 <li class="nav-item">
                     <a class="nav-link" href="{{url_for('auth.profile')}}">Profile</a>
                 </li>
@@ -38,6 +47,11 @@
                 {% endif %}
 
             </ul>
+            {% if current_user.is_authenticated %}
+            <span class="navbar-text">
+                {{ current_user.username|capitalize }}
+            </span>
+            {% endif %}
         </div>
     </div>
 </nav>
